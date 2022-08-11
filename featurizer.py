@@ -1,15 +1,18 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
-import os, shutil
+import os, shutil, re
 
 plt.ion()
 
 def process_logs(PATH):
 	data = []
-	for f in os.listdir(PATH): #think this lists files
-		print(f)
-		features = process_file(PATH + '/' + f)
+	for f in os.listdir(PATH):
+		#extract from filename
+		itr = re.search(r'(.*?)\.(.*?)_(.*?)_(.*?)_(.*?)_(.*?)_(.*?)\.csv', f).group(4)
+		dvfs = re.search(r'(.*?)\.(.*?)_(.*?)_(.*?)_(.*?)_(.*?)_(.*?)\.csv', f).group(5)
+
+		features = process_file(PATH + '/' + f, itr, dvfs)
 		data.append(features)
 
 	data = pd.DataFrame(data)
@@ -20,7 +23,7 @@ def process_logs(PATH):
 
 	return data
 
-def process_file(path):
+def process_file(path, itr, dvfs):
 	features = {}
 	values = pd.read_csv(path, sep = ' ', skiprows = 1, index_col = 0, names = ['rx_desc', 'rx_bytes', 'tx_desc', 'tx_bytes', 'instructions', 'cycles', 'ref_cycles', 'llc_miss', 'c3', 'c6', 'c7', 'joules', 'timestamp'])
 	print(values.head())
@@ -44,8 +47,8 @@ def process_file(path):
 			features[f'{c}_{p}'] = pcts[i]
 
 	#extract from filename
-#	features['itr'] = ...
-#	features['dvfs'] = ...
+	features['itr'] = itr
+	features['dvfs'] = dvfs
 #	
 #	features['lat_99'] = ...
 #	features['joules'] = ...
