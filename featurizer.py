@@ -26,7 +26,7 @@ def process_logs(PATH):
 def process_file(path, itr, dvfs):
 	features = {}
 	values = pd.read_csv(path, sep = ' ', skiprows = 1, index_col = 0, names = ['rx_desc', 'rx_bytes', 'tx_desc', 'tx_bytes', 'instructions', 'cycles', 'ref_cycles', 'llc_miss', 'c3', 'c6', 'c7', 'joules', 'timestamp'])
-	print(values.head())
+#	print(values.head())
 #	print(values.shape)
 #	print(values['rx_bytes'].head())
 
@@ -40,18 +40,23 @@ def process_file(path, itr, dvfs):
 		for i, p in enumerate(PCT_LIST):
 			features[f'{c}_{p}'] = pcts[i]
 	    
-	ms_cols = ['instructions', 'joules', 'llc_miss', 'cycles', 'ref_cycles']
+	ms_cols = ['instructions', 'llc_miss', 'cycles', 'ref_cycles']
 	for c in ms_cols:
 		pcts = np.percentile(values[c], PCT_LIST)
 		for i, p in enumerate(PCT_LIST):
 			features[f'{c}_{p}'] = pcts[i]
+
+	perf_cols = ['joules']
+	for c in perf_cols:
+		pct = np.percentile(values[c], 99)
+		features[f'{c}_99'] = pct
+		print("joules: ", pct)
 
 	#extract from filename
 	features['itr'] = itr
 	features['dvfs'] = dvfs
 #	
 #	features['lat_99'] = ...
-#	features['joules'] = ...
 	return features
 
 if __name__ == '__main__':
